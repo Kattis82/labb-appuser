@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:f="jakarta.faces.core"
+      xmlns:h="jakarta.faces.html">
+<f:view>
+    <h:head>
+        <title>WebSocket Chat</title>
+    </h:head>
+    <h:body>
+        <!-- som skydd, om ingen är inloggad
+        rendered= visa bara komponenten om villkoret är sant-->
+        <h:panelGroup rendered="#{appUserLoginBean.loggedInUser == null}">
+            <h2>Du måste logga in först</h2>
+            <!--om inte inloggad, visa login-länk -->
+            <h:link value="Gå till login" outcome="login.xhtml"/>
+        </h:panelGroup>
+
+        <!--  chatten visas bara om användaren är inloggad -->
+        <h:panelGroup rendered="#{appUserLoginBean.loggedInUser != null}">
+
+            <!-- Logout-knapp -->
+            <h:form>
+                <h:commandButton value="Logout"
+                                 action="#{appUserLoginBean.logout()}"/>
+            </h:form>
+
+            <!-- Visa vem som är inloggad -->
+            <h3>Inloggad som: #{appUserLoginBean.loggedInUser.username}</h3>
+            <h1>WebSocket-klient</h1>
+
+            <div>
+                Status: <span id="status">DISCONNECTED</span>
+            </div>
+
+            <div>
+                <input id="input" type="text" placeholder="Skriv ett meddelande..."/>
+                <button id="sendBtn">Skicka</button>
+            </div>
+
+            <pre id="log"></pre>
+
+            <script>
+                const statusEl = document.getElementById("status");
+                const logEl = document.getElementById("log");
+                const inputEl = document.getElementById("input");
+                const sendBtn = document.getElementById("sendBtn");
+
+                // Hämta username från sessionen
+                const username = "#{appUserLoginBean.loggedInUser.username}";
+
+                // WebSocket-url (matcha context root för websocket-servern)
+                const wsUrl = "ws://localhost:8080/labb-websocket/ws/chat";
+                // browsern gör HTTP Upgrade request (här sker handshake)
+                const socket = new WebSocket(wsUrl);
+
+                // när handshake är klar och anslutningen är uppe, då triggas open
+                // när anslutningen öppnas
+                socket.addEventListener("open", () => {
+                    statusEl.textContent = "CONNECTED";
+                    logEl.textContent += "Connected\n";
+                });
+
+                // När servern skickar meddelande
+                socket.addEventListener("message", (event) => {
+                    logEl.textContent += event.data + "\n";
+                });
+
+                // Skicka meddelande när man klickar på knappen
+                sendBtn.addEventListener("click", () => {
+                    const msg = inputEl.value.trim();
+                    if (!msg) return; // ignorera tomt meddelande
+                    // send skickar text till servern
+                    socket.send(username + ": " + msg); // skicka med användarnamn
+                    inputEl.value = ""; // rensa inputfältet
+                });
+
+                // När anslutningen stängs
+                socket.addEventListener("close", () => {
+                    statusEl.textContent = "DISCONNECTED";
+                    logEl.textContent += "Disconnected\n";
+                });
+
+                // Vid fel
+                socket.addEventListener("error", (err) => {
+                    statusEl.textContent = "ERROR";
+                    logEl.textContent += "Error occurred: " + err + "\n";
+                });
+            </script>
+        </h:panelGroup>
+
+    </h:body>
+</f:view>
+</html>

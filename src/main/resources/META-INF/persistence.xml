@@ -3,8 +3,9 @@
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd"
              version="3.0">
-
+    <!--detta kopplar JPA till databasen-->
     <persistence-unit name="labbNeon_database" transaction-type="JTA">
+        <!-- connection poolen i GlassFish-->
         <jta-data-source>labbNeon_database</jta-data-source>
 
     </persistence-unit>

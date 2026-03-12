@@ -6,6 +6,7 @@
 <f:view>
     <h:head></h:head>
     <h:body>
+        <!--skapar användare-->
         <h:form>
             <h:inputText value="#{appUserBean.username}" placeholder="username"/>
             <h:inputSecret value="#{appUserBean.password}" placeholder="password"/>
@@ -13,6 +14,7 @@
 
         </h:form>
 
+        <!--visar lista-->
         <ui:repeat value="#{appUserBean.users}" var="user">
             <li>
                 <strong>Id:</strong> #{user.id}
